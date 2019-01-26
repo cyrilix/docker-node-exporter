@@ -57,16 +57,22 @@ build_manifests() {
     docker -D manifest push "${IMG_NAME}:${MAJOR_VERSION}"
 }
 
+get_binary() {
+    local arch="$1"
+    rm -f node_exporter
+    curl -qL https://github.com/prometheus/node_exporter/releases/download/v${VERSION}/node_exporter-${VERSION}.linux-${arch}.tar.gz | tar -zx
+    cp -nf "node_exporter-${VERSION}.linux-${arch}/node_exporter" .
+}
+
 fetch_sources
 init_qemu
 
 echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-
-GOOS=linux GOARCH=amd64 make 
+get_binary amd64
 build_and_push_images amd64 ./Dockerfile
 
 sed "s#FROM \+\(.*\)#FROM arm32v6/busybox\n\nCOPY qemu-arm-static /usr/bin/\n#" Dockerfile > Dockerfile.arm
-GOOS=linux GOARCH=arm GOARM=6 make 
+get_binary armv6
 build_and_push_images arm ./Dockerfile.arm
 
 build_manifests
