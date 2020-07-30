@@ -1,4 +1,3 @@
-## Node-exporter builder
+# docker-node-exporter
 
-Travis project to build multiarch docker images.
-
+Multiarch docker images for [prometheus/node_exporter](https://github.com/prom/node_exporter)
